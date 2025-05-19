@@ -45,6 +45,12 @@ from user_api import validate_api_key, record_translation
 # Initialize user management
 user_mgmt = UserManagement()
 
+# Import static file routes
+from fix_static_files import add_static_routes
+
+# Add static file routes
+add_static_routes(app)
+
 # Initialize Gemini
 def initialize_gemini():
     api_key = os.environ.get("GEMINI_API_KEY")
