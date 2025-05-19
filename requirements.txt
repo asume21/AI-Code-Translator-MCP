@@ -9,7 +9,8 @@ google-generativeai==0.3.1
 # Authentication
 pyjwt==2.10.1
 
-# Database is built into Python (sqlite3)
+# Database
+psycopg2-binary==2.9.9  # PostgreSQL adapter
 
 # Payment processing
 stripe==7.5.0
