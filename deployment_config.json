@@ -1,0 +1,33 @@
+{
+  "name": "ai-code-translator",
+  "version": "1.0.0",
+  "description": "AI Code Translator with Astutely Chatbot",
+  "main": "simple_mcp_server.py",
+  "environment": {
+    "GEMINI_API_KEY": "AIzaSyCtB1OoW3js_hlXuQnWbT1pIf6VndB7jRo",
+    "JWT_SECRET": "2782831309974929295",
+    "STRIPE_API_KEY": "YOUR_STRIPE_API_KEY"
+  },
+  "scripts": {
+    "start": "python simple_mcp_server.py",
+    "dev": "python simple_mcp_server.py --debug"
+  },
+  "dependencies": {
+    "python": "3.11.6",
+    "packages": [
+      "flask",
+      "flask-cors",
+      "google-generativeai",
+      "pyjwt",
+      "stripe"
+    ]
+  },
+  "staticFiles": [
+    "integrated_demo.html",
+    "ai_money_maker.html"
+  ],
+  "database": {
+    "type": "sqlite",
+    "path": "users.db"
+  }
+}

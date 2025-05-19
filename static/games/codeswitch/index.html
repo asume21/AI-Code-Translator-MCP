@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeSwitch.IO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="ui">
+            <div class="class">Class: <span id="class-name">-</span></div>
+            <div class="score">Size: <span id="score">1</span></div>
+            <div class="language">Language: <span id="language">-</span></div>
+            <div class="speed">Speed: <span id="speed">-</span></div>
+        </div>
+    </div>
+    <div id="startScreen" class="start-screen">
+        <h1>CodeSwitch.IO</h1>
+        <p>Collect code tokens to grow and evolve your program!</p>
+        <div class="class-selection">
+            <h2>Choose Your Programmer Type</h2>
+            <div class="classes">
+                <div class="class-option" data-class="hacker">
+                    <h3>Hacker</h3>
+                    <p>Fast and nimble, but starts small</p>
+                    <div class="stats">
+                        <span>⚡ Fast</span>
+                        <span>📦 Small</span>
+                        <span>📈 Slow Growth</span>
+                    </div>
+                </div>
+                <div class="class-option" data-class="engineer">
+                    <h3>Engineer</h3>
+                    <p>Balanced stats for steady growth</p>
+                    <div class="stats">
+                        <span>⚖️ Balanced</span>
+                        <span>📊 Medium</span>
+                        <span>📈 Normal Growth</span>
+                    </div>
+                </div>
+                <div class="class-option" data-class="architect">
+                    <h3>Architect</h3>
+                    <p>Starts big but moves slowly</p>
+                    <div class="stats">
+                        <span>🐢 Slow</span>
+                        <span>🏗️ Large</span>
+                        <span>📈 Fast Growth</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button id="startButton" disabled>Select a Class</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

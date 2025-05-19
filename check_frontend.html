@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Code Translator Frontend Connection Test</h1>
+    
+    <div id="results">
+        <div class="result pending">Testing connection to MCP server...</div>
+    </div>
+    
+    <button id="testBtn">Run Tests Again</button>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const resultsDiv = document.getElementById('results');
+            const testBtn = document.getElementById('testBtn');
+            
+            // Run tests when page loads
+            runTests();
+            
+            // Run tests when button is clicked
+            testBtn.addEventListener('click', runTests);
+            
+            function runTests() {
+                resultsDiv.innerHTML = '<div class="result pending">Testing connection to MCP server...</div>';
+                
+                // Test 1: Check if server is running
+                testEndpoint('http://127.0.0.1:5000/', 'Server Status')
+                    .then(() => testEndpoint('http://127.0.0.1:5000/health', 'Health Endpoint'))
+                    .then(() => testEndpoint('http://127.0.0.1:5000/languages', 'Languages Endpoint'))
+                    .then(() => {
+                        // Test translation
+                        const translationData = {
+                            source_code: 'print("Hello World")',
+                            source_language: 'python',
+                            target_language: 'java'
+                        };
+                        
+                        return testPostEndpoint('http://127.0.0.1:5000/translate', translationData, 'Translation Endpoint');
+                    })
+                    .catch(error => {
+                        addResult(`Test failed: ${error.message}`, false);
+                    });
+            }
+            
+            function testEndpoint(url, name) {
+                return new Promise((resolve, reject) => {
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            addResult(`✅ ${name} is working: ${JSON.stringify(data).substring(0, 50)}...`, true);
+                            resolve();
+                        })
+                        .catch(error => {
+                            addResult(`❌ ${name} failed: ${error.message}`, false);
+                            reject(error);
+                        });
+                });
+            }
+            
+            function testPostEndpoint(url, data, name) {
+                return new Promise((resolve, reject) => {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            addResult(`✅ ${name} is working: ${JSON.stringify(data).substring(0, 50)}...`, true);
+                            resolve();
+                        })
+                        .catch(error => {
+                            addResult(`❌ ${name} failed: ${error.message}`, false);
+                            reject(error);
+                        });
+                });
+            }
+            
+            function addResult(message, success) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `result ${success ? 'success' : 'error'}`;
+                resultDiv.textContent = message;
+                resultsDiv.appendChild(resultDiv);
+            }
+        });
+    </script>
+</body>
+</html>

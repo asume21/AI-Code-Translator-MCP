@@ -1,0 +1,25 @@
+{
+  services: [
+    {
+      type: web,
+      name: ai-code-translator,
+      env: python,
+      buildCommand: pip install -r requirements.txt,
+      startCommand: gunicorn simple_mcp_server:app,
+      envVars: [
+        {
+          key: GEMINI_API_KEY,
+          value: ${GEMINI_API_KEY}
+        },
+        {
+          key: JWT_SECRET,
+          value: ${JWT_SECRET}
+        },
+        {
+          key: STRIPE_API_KEY,
+          value: ${STRIPE_API_KEY}
+        }
+      ]
+    }
+  ]
+}
