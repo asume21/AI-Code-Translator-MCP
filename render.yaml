@@ -5,7 +5,7 @@
       name: ai-code-translator,
       env: python,
       buildCommand: pip install -r requirements.txt,
-      startCommand: gunicorn simple_mcp_server:app,
+      startCommand: gunicorn render_app:app,
       envVars: [
         {
           key: GEMINI_API_KEY,
