@@ -1,38 +1,25 @@
-{
-  services: [
-    {
-      type: web,
-      name: ai-code-translator,
-      env: python,
-      buildCommand: pip install -r requirements.txt,
-      startCommand: gunicorn production_mcp_server:app,
-      envVars: [
-        {
-          key: GEMINI_API_KEY,
-          value: ${GEMINI_API_KEY}
-        },
-        {
-          key: JWT_SECRET,
-          value: ${JWT_SECRET}
-        },
-        {
-          key: STRIPE_API_KEY,
-          value: ${STRIPE_API_KEY}
-        },
-        {
-          key: DATABASE_URL,
-          fromDatabase: {
-            name: ai-code-translator-db,
-            property: connectionString
-          }
-        }
-      ]
-    }
-  ],
-  databases: [
-    {
-      name: ai-code-translator-db,
-      plan: starter
-    }
-  ]
-}
+services:
+  - type: web
+    name: ai-code-translator
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python fix_static_files.py
+    startCommand: gunicorn production_mcp_server:app --bind 0.0.0.0:$PORT --workers 4
+    envVars:
+      - key: GEMINI_API_KEY
+        value: ${GEMINI_API_KEY}
+      - key: JWT_SECRET
+        value: ${JWT_SECRET}
+      - key: STRIPE_API_KEY
+        value: ${STRIPE_API_KEY}
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-code-translator-db
+          property: connectionString
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: ai-code-translator-db
+    plan: starter
