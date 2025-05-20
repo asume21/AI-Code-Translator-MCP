@@ -82,6 +82,10 @@ def initialize_gemini():
 # Initialize the model
 gemini_model = initialize_gemini()
 
+# --- NEW: Payment Processor initialization ---
+from payment_processing import PaymentProcessor
+payment_processor = PaymentProcessor(db_connection=getattr(user_mgmt, 'conn', None))
+
 # Authentication decorator
 def require_api_key(f):
     def decorated_function(*args, **kwargs):
@@ -247,6 +251,35 @@ def list_models():
             }
         ]
     })
+
+@app.route('/api/billing/plans', methods=['GET'])
+@require_api_key
+def billing_plans():
+    """Return available subscription plans."""
+    return jsonify(payment_processor.get_subscription_plans())
+
+@app.route('/api/billing/checkout', methods=['POST'])
+@require_api_key
+def billing_checkout():
+    """Create a Stripe Checkout Session and return redirect URL."""
+    data = request.json or {}
+    plan_id = data.get('plan_id')
+    if not plan_id:
+        return jsonify({"success": False, "message": "plan_id is required"}), 400
+
+    user_id = request.user_info.get('user_id')
+    result = payment_processor.create_checkout_session(plan_id, user_id)
+    status_code = 200 if result.get('success') else 400
+    return jsonify(result), status_code
+
+# Stripe webhook (no API key required)
+@app.route('/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.data
+    sig_header = request.headers.get('Stripe-Signature', '')
+    result = payment_processor.handle_webhook(payload, sig_header)
+    status_code = 200 if result.get('success') else 400
+    return jsonify(result), status_code
 
 # Static file routes
 @app.route('/integrated_demo.html')

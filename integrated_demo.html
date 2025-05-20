@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Code Translator - Integrated Demo</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-MEASUREMENT_ID');
+        
+        // Track conversions
+        function trackConversion(action, category, label) {
+            gtag('event', action, {
+                'event_category': category,
+                'event_label': label
+            });
+        }
+    </script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -179,8 +196,15 @@
                     <option value="python">Python</option>
                     <option value="javascript">JavaScript</option>
                     <option value="java">Java</option>
-                    <option value="c++">C++</option>
+                    <option value="cpp">C++</option>
                     <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="php">PHP</option>
+                    <option value="swift">Swift</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="rust">Rust</option>
                 </select>
                 <label for="source-code">Source Code:</label>
                 <textarea id="source-code" placeholder="Enter your code here...">def factorial(n):
@@ -196,11 +220,18 @@ print(f"Factorial of 5 is {result}")</textarea>
             <div class="col">
                 <label for="target-language">Target Language:</label>
                 <select id="target-language">
-                    <option value="javascript">JavaScript</option>
                     <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
                     <option value="java">Java</option>
-                    <option value="c++">C++</option>
+                    <option value="cpp">C++</option>
                     <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="php">PHP</option>
+                    <option value="swift">Swift</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="rust">Rust</option>
                 </select>
                 <label for="translated-code">Translated Code:</label>
                 <textarea id="translated-code" placeholder="Translated code will appear here..." readonly></textarea>
@@ -219,6 +250,15 @@ print(f"Factorial of 5 is {result}")</textarea>
                     <option value="python">Python</option>
                     <option value="javascript">JavaScript</option>
                     <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="php">PHP</option>
+                    <option value="swift">Swift</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="rust">Rust</option>
                 </select>
                 <label for="scan-code">Code to Scan:</label>
                 <textarea id="scan-code" placeholder="Enter code to scan for vulnerabilities...">import os
@@ -279,6 +319,57 @@ def process_user_input(user_input):
         </div>
         <button onclick="getTranslationHistory()" id="history-button" disabled>View Translation History</button>
         <div id="translation-history"></div>
+        
+        <!-- Add Upgrade button -->
+        <button onclick="showPricingModal()" class="upgrade-button" id="upgrade-button" style="display: none; background-color: #6772E5; margin-top: 15px;">Upgrade Your Plan</button>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div id="pricing-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 900px; border-radius: 8px;">
+            <span class="close" onclick="closePricingModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2>Choose Your Plan</h2>
+            <div class="pricing-container" style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 20px;">
+                <!-- Free Plan -->
+                <div class="pricing-card" style="flex: 1; min-width: 250px; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3>Free</h3>
+                    <div class="price" style="font-size: 24px; font-weight: bold; margin: 15px 0;">$0<span style="font-size: 16px; font-weight: normal;">/month</span></div>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li style="padding: 5px 0;">✓ 50 translations per month</li>
+                        <li style="padding: 5px 0;">✓ Quick vulnerability scans</li>
+                        <li style="padding: 5px 0;">✓ 30-day history retention</li>
+                        <li style="padding: 5px 0;">✓ Community support</li>
+                    </ul>
+                    <button onclick="selectPlan('free')" style="width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">Current Plan</button>
+                </div>
+                
+                <!-- Pro Plan -->
+                <div class="pricing-card" style="flex: 1; min-width: 250px; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid #6772E5;">
+                    <h3>Professional</h3>
+                    <div class="price" style="font-size: 24px; font-weight: bold; margin: 15px 0;">$9.99<span style="font-size: 16px; font-weight: normal;">/month</span></div>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li style="padding: 5px 0;">✓ 500 translations per month</li>
+                        <li style="padding: 5px 0;">✓ Full vulnerability scans</li>
+                        <li style="padding: 5px 0;">✓ 90-day history retention</li>
+                        <li style="padding: 5px 0;">✓ Email support</li>
+                    </ul>
+                    <button onclick="selectPlan('professional')" style="width: 100%; padding: 10px; background-color: #6772E5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">Upgrade to Pro</button>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="pricing-card" style="flex: 1; min-width: 250px; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3>Enterprise</h3>
+                    <div class="price" style="font-size: 24px; font-weight: bold; margin: 15px 0;">$29.99<span style="font-size: 16px; font-weight: normal;">/month</span></div>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li style="padding: 5px 0;">✓ 5000 translations per month</li>
+                        <li style="padding: 5px 0;">✓ Full vulnerability scans</li>
+                        <li style="padding: 5px 0;">✓ 365-day history retention</li>
+                        <li style="padding: 5px 0;">✓ Priority support</li>
+                    </ul>
+                    <button onclick="selectPlan('enterprise')" style="width: 100%; padding: 10px; background-color: #6772E5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">Upgrade to Enterprise</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -313,6 +404,9 @@ def process_user_input(user_input):
             const password = document.getElementById('login-password').value;
             const statusElement = document.getElementById('login-status');
             
+            // Track login attempt
+            trackConversion('login_started', 'Account', 'User initiated login');
+            
             if (!usernameOrEmail || !password) {
                 statusElement.className = 'status error';
                 statusElement.textContent = 'Please enter both username/email and password';
@@ -342,6 +436,9 @@ def process_user_input(user_input):
                     statusElement.className = 'status success';
                     statusElement.textContent = `Welcome back, ${data.username}!`;
                     
+                    // Track successful login
+                    trackConversion('login_completed', 'Account', 'User logged in successfully');
+                    
                     // Update UI for logged-in state
                     updateUserProfile();
                     document.getElementById('history-button').disabled = false;
@@ -360,6 +457,9 @@ def process_user_input(user_input):
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-password').value;
             const statusElement = document.getElementById('register-status');
+            
+            // Track registration attempt
+            trackConversion('registration_started', 'Account', 'User initiated registration');
             
             if (!username || !email || !password) {
                 statusElement.className = 'status error';
@@ -384,9 +484,12 @@ def process_user_input(user_input):
                 
                 if (data.success) {
                     statusElement.className = 'status success';
-                    statusElement.textContent = 'Registration successful! You can now log in.';
+                    statusElement.textContent = 'Registration successful! Please log in.';
                     
-                    // Clear registration form
+                    // Track successful registration
+                    trackConversion('registration_completed', 'Account', 'User registered successfully');
+                    
+                    // Clear form fields
                     document.getElementById('reg-username').value = '';
                     document.getElementById('reg-email').value = '';
                     document.getElementById('reg-password').value = '';
@@ -410,6 +513,9 @@ def process_user_input(user_input):
                 document.getElementById('translation-status').textContent = 'Please log in to use the translation service';
                 return;
             }
+            
+            // Track translation attempt
+            trackConversion('translation_started', 'Translation', 'User initiated translation');
             
             const sourceCode = document.getElementById('source-code').value;
             const sourceLanguage = document.getElementById('source-language').value;
@@ -445,6 +551,10 @@ def process_user_input(user_input):
                     document.getElementById('translated-code').value = data.translated_code;
                     statusElement.className = 'status success';
                     statusElement.textContent = `Translation successful! ${data.translations_remaining} translations remaining.`;
+                    
+                    // Track successful translation
+                    trackConversion('translation_completed', 'Translation', 
+                        `${sourceLanguage} to ${targetLanguage} (${sourceCode.length} chars)`);
                 } else {
                     statusElement.className = 'status error';
                     statusElement.textContent = data.error || 'Translation failed';
@@ -552,6 +662,9 @@ def process_user_input(user_input):
                 <p><strong>User ID:</strong> ${userId}</p>
                 <p><strong>API Key:</strong> ${apiKey}</p>
             `;
+            
+            // Show upgrade button when logged in
+            document.getElementById('upgrade-button').style.display = 'block';
         }
         
         // Astutely Chatbot Integration
@@ -698,6 +811,65 @@ def process_user_input(user_input):
                 document.getElementById('translation-history').innerHTML = `<p class="error">Error: ${error.message}</p>`;
             }
         }
+        // Pricing and subscription functions
+        function showPricingModal() {
+            document.getElementById('pricing-modal').style.display = 'block';
+        }
+        
+        function closePricingModal() {
+            document.getElementById('pricing-modal').style.display = 'none';
+        }
+        
+        function selectPlan(planId) {
+            if (planId === 'free') {
+                alert('You are already on the Free plan.');
+                closePricingModal();
+                return;
+            }
+            
+            // Track plan selection
+            trackConversion('plan_selected', 'Subscription', `Selected plan: ${planId}`);
+            
+            if (!authToken) {
+                alert('Please log in to upgrade your plan.');
+                closePricingModal();
+                return;
+            }
+            
+            // Create checkout session
+            fetch(`${API_BASE_URL}/api/billing/checkout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ plan_id: planId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.checkout_url) {
+                    // Track checkout initiation
+                    trackConversion('checkout_started', 'Subscription', `Checkout for plan: ${planId}`);
+                    
+                    // Redirect to Stripe Checkout
+                    window.location.href = data.checkout_url;
+                } else {
+                    alert(data.message || 'Error creating checkout session');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            });
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('pricing-modal');
+            if (event.target === modal) {
+                closePricingModal();
+            }
+        };
     </script>
 </body>
 </html>
