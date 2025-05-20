@@ -28,11 +28,25 @@ def setup_astutely_routes(app, astutely_chatbot, require_api_key):
     
     Args:
         app: The Flask app to add routes to.
-        astutely_chatbot: The AstutelyChatbot instance.
+        astutely_chatbot: The AstutelyChatbot instance or None if not available.
         require_api_key: The API key authentication decorator.
     """
     # User conversation storage
     user_conversations = {}
+    
+    if astutely_chatbot is None:
+        logger.warning("Astutely chatbot is not initialized. Chat functionality will be disabled.")
+        
+        @app.route('/astutely/chat', methods=['POST'])
+        @require_api_key
+        def astutely_chat_endpoint_disabled():
+            return jsonify({
+                "error": "Astutely chatbot is not available. Please check your GEMINI_API_KEY environment variable.",
+                "status": "disabled"
+            }), 503
+            
+        logger.info("Added disabled Astutely chat endpoint")
+        return
     
     # Chat endpoint
     @app.route('/astutely/chat', methods=['POST'])

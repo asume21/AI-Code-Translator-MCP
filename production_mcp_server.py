@@ -38,20 +38,36 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
-# Import PostgreSQL user management
-from user_management_postgres import UserManagementPostgres
-from user_api_postgres import validate_api_key, record_translation
-
-# Initialize user management
+# First, try to import SQLite modules as they don't require environment variables
 try:
-    user_mgmt = UserManagementPostgres()
-    logger.info("PostgreSQL user management initialized successfully")
-except Exception as e:
-    logger.error(f"Error initializing PostgreSQL user management: {e}")
-    logger.warning("Falling back to SQLite user management")
     from user_management import UserManagement
     from user_api import validate_api_key, record_translation
+    
+    # Initialize SQLite first
     user_mgmt = UserManagement()
+    use_postgres = False
+    logger.info("SQLite user management initialized successfully")
+    
+    # Now try PostgreSQL in the background
+    try:
+        from user_management_postgres import UserManagementPostgres
+        from user_api_postgres import validate_api_key as pg_validate_api_key
+        from user_api_postgres import record_translation as pg_record_translation
+        
+        # Try to initialize PostgreSQL
+        pg_user_mgmt = UserManagementPostgres()
+        user_mgmt = pg_user_mgmt
+        validate_api_key = pg_validate_api_key
+        record_translation = pg_record_translation
+        use_postgres = True
+        logger.info("Successfully upgraded to PostgreSQL user management")
+        
+    except Exception as pg_e:
+        logger.warning(f"Could not initialize PostgreSQL: {pg_e}. Continuing with SQLite.")
+        
+except Exception as e:
+    logger.error(f"Error initializing user management: {e}")
+    raise RuntimeError("Failed to initialize any user management system")
 
 # Initialize Gemini
 def initialize_gemini():
@@ -82,9 +98,21 @@ def initialize_gemini():
 # Initialize the model
 gemini_model = initialize_gemini()
 
-# --- NEW: Payment Processor initialization ---
+# --- Payment Processor initialization ---
 from payment_processing import PaymentProcessor
-payment_processor = PaymentProcessor(db_connection=getattr(user_mgmt, 'conn', None))
+
+# Get the database connection based on the storage backend
+db_connection = None
+if use_postgres and hasattr(user_mgmt, 'db') and hasattr(user_mgmt.db, 'conn'):
+    db_connection = user_mgmt.db.conn
+    logger.info("Using PostgreSQL connection for payment processing")
+elif hasattr(user_mgmt, 'conn'):
+    db_connection = user_mgmt.conn
+    logger.info("Using SQLite connection for payment processing")
+else:
+    logger.warning("No database connection available for payment processing")
+
+payment_processor = PaymentProcessor(db_connection=db_connection)
 
 # Authentication decorator
 def require_api_key(f):
@@ -306,32 +334,60 @@ def serve_static(path):
         logger.error(f"Error serving static file {path}: {e}")
         return f"Error: {str(e)}", 500
 
-# Import user routes setup function
-try:
-    from user_api_postgres import setup_user_routes
-    logger.info("Using PostgreSQL user API")
-except ImportError:
-    from user_api import setup_user_routes
-    logger.warning("Falling back to SQLite user API")
+# Set up user routes based on the database backend
+if use_postgres:
+    try:
+        # Try to import and set up PostgreSQL user routes
+        from user_api_postgres import setup_user_routes as setup_pg_routes
+        logger.info("Setting up PostgreSQL user routes")
+        setup_pg_routes(app)
+        logger.info("PostgreSQL user routes set up successfully")
+    except Exception as e:
+        logger.error(f"Error setting up PostgreSQL user routes: {e}")
+        logger.warning("Falling back to SQLite user routes")
+        use_postgres = False
+        from user_api import setup_user_routes as setup_sqlite_routes
+        setup_sqlite_routes(app)
+        logger.info("SQLite user routes set up successfully")
+else:
+    # Use SQLite user routes
+    from user_api import setup_user_routes as setup_sqlite_routes
+    logger.info("Setting up SQLite user routes")
+    setup_sqlite_routes(app)
+    logger.info("SQLite user routes set up successfully")
 
 # Import vulnerability scanner routes
 from vulnerability_api import setup_vulnerability_routes
-
-# Import Astutely chatbot
-from astutely_chatbot import AstutelyChatbot
-from setup_astutely import setup_astutely_routes
-
-# Set up user management routes
-setup_user_routes(app)
 
 # Set up vulnerability scanner routes
 setup_vulnerability_routes(app, require_api_key)
 
 # Initialize Astutely chatbot
-astutely = AstutelyChatbot(os.environ.get("GEMINI_API_KEY"))
+astutely = None
+try:
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    if gemini_key:
+        try:
+            from astutely_chatbot import AstutelyChatbot
+            from setup_astutely import setup_astutely_routes
+            
+            astutely = AstutelyChatbot(gemini_key)
+            logger.info("Astutely chatbot initialized successfully")
+            
+            # Set up Astutely routes
+            setup_astutely_routes(app, astutely, require_api_key)
+            logger.info("Astutely routes set up successfully")
+        except ImportError as ie:
+            logger.warning(f"Astutely modules not available: {ie}")
+        except Exception as e:
+            logger.error(f"Error initializing Astutely chatbot: {e}")
+    else:
+        logger.warning("GEMINI_API_KEY not set - Astutely chatbot will be disabled")
+except Exception as e:
+    logger.error(f"Error initializing Astutely chatbot: {e}")
+    logger.warning("Continuing without Astutely chatbot")
 
-# Set up Astutely chatbot routes
-setup_astutely_routes(app, astutely, require_api_key)
+# Astutely routes are set up in the try block above if available
 
 # Run the server
 if __name__ == '__main__':
