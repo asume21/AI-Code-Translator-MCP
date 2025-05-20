@@ -78,19 +78,42 @@ class TranslationRequest(BaseModel):
     source_language: str = "python"
     target_language: str = "javascript"
 
+    def validate(self):
+        if len(self.source_code) > 10000:  # 10KB limit
+            raise ValueError("Source code exceeds maximum length of 10KB")
+        
+        supported_languages = ["python", "javascript", "java", "cpp", "csharp", "go", 
+                             "ruby", "php", "swift", "kotlin", "typescript", "rust"]
+        
+        if self.source_language not in supported_languages:
+            raise ValueError(f"Unsupported source language: {self.source_language}")
+        if self.target_language not in supported_languages:
+            raise ValueError(f"Unsupported target language: {self.target_language}")
+        
+        if self.source_language == self.target_language:
+            raise ValueError("Source and target languages must be different")
+
 class TranslationResponse(BaseModel):
     translated_code: str
     feedback: Optional[str] = None
+    warnings: Optional[List[str]] = None
 
 class ChatRequest(BaseModel):
     message: str
 
+    def validate(self):
+        if len(self.message) > 4000:  # 4KB limit
+            raise ValueError("Message exceeds maximum length of 4KB")
+        if not self.message.strip():
+            raise ValueError("Message cannot be empty")
+
 class ChatResponse(BaseModel):
     response: str
+    warnings: Optional[List[str]] = None
 
 # Gemini AI Interface
 class GeminiInterface:
-    def __init__(self, api_key=None, model_name="gemini-1.5-pro"):
+    def __init__(self, api_key=None, model_name="gemini-pro"):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("Gemini API key not provided")
@@ -98,29 +121,28 @@ class GeminiInterface:
         # Configure the Gemini API
         genai.configure(api_key=self.api_key)
         
-        # Add 'models/' prefix if not already present
-        if not model_name.startswith('models/'):
-            model_name = f"models/{model_name}"
-        
         self.model_name = model_name
         
         try:
             # List available models for debugging
             logger.info("Available models:")
+            available_models = []
             for m in genai.list_models():
                 if 'generateContent' in m.supported_generation_methods:
+                    available_models.append(m.name)
                     logger.info(f"- {m.name}")
             
+            # Validate model name
+            if model_name not in available_models:
+                logger.warning(f"Model {model_name} not found in available models. Using gemini-pro")
+                model_name = "gemini-pro"
+            
             # Get the model
-            self.model = genai.GenerativeModel(self.model_name)
-            logger.info(f"Successfully initialized model: {self.model_name}")
+            self.model = genai.GenerativeModel(model_name)
+            logger.info(f"Successfully initialized model: {model_name}")
         except Exception as e:
             logger.error(f"Error initializing Gemini model: {e}")
-            # Fallback to a known working model
-            fallback_model = "models/gemini-1.0-pro"
-            logger.info(f"Falling back to {fallback_model}")
-            self.model_name = fallback_model
-            self.model = genai.GenerativeModel(self.model_name)
+            raise ValueError(f"Failed to initialize Gemini model: {str(e)}")
         
         # Set up the system prompt for code translation
         self.system_prompt = """You are an expert code translator that specializes in converting code between different programming languages while maintaining functionality and idiomatic style. 
@@ -239,6 +261,9 @@ async def root():
 @app.post("/translate", response_model=TranslationResponse, dependencies=[Depends(verify_api_key)])
 async def translate_code(request: TranslationRequest):
     try:
+        # Validate request
+        request.validate()
+        
         # Translate the code
         translated_code = gemini_interface.translate_code(
             source_code=request.source_code,
@@ -254,10 +279,24 @@ async def translate_code(request: TranslationRequest):
             target_lang=request.target_language
         )
         
+        # Check for potential issues
+        warnings = []
+        if len(translated_code) > len(request.source_code) * 2:
+            warnings.append("Translated code is significantly longer than source code")
+        if "Error" in translated_code:
+            warnings.append("Translation may contain errors")
+        
         # Return the response
         return TranslationResponse(
             translated_code=translated_code,
-            feedback=feedback
+            feedback=feedback,
+            warnings=warnings if warnings else None
+        )
+    except ValueError as e:
+        logger.warning(f"Validation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
     except Exception as e:
         logger.error(f"Translation error: {e}")
@@ -269,8 +308,28 @@ async def translate_code(request: TranslationRequest):
 @app.post("/chat", response_model=ChatResponse, dependencies=[Depends(verify_api_key)])
 async def chat(request: ChatRequest):
     try:
+        # Validate request
+        request.validate()
+        
         response = gemini_interface.chat(request.message)
-        return ChatResponse(response=response)
+        
+        # Check for potential issues
+        warnings = []
+        if len(response) > len(request.message) * 3:
+            warnings.append("Response is significantly longer than input")
+        if "Error" in response:
+            warnings.append("Response may contain errors")
+        
+        return ChatResponse(
+            response=response,
+            warnings=warnings if warnings else None
+        )
+    except ValueError as e:
+        logger.warning(f"Validation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
         logger.error(f"Chat error: {e}")
         raise HTTPException(
