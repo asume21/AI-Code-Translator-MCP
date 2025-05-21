@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Translator - Integrated Demo</title>
+    
+    <!-- Configuration -->
+    <script src="/static/config.js"></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-MEASUREMENT_ID');
+        
+        // Track conversions
+        function trackConversion(action, category, label) {
+            gtag('event', action, {
+                'event_category': category,
+                'event_label': label
+            });
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        select, input {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .row {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .col {
+            flex: 1;
+            padding: 0 10px;
+        }
+        .status {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .vulnerability-results {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Code Translator - Integrated Demo</h1>
+    
+    <div class="container">
+        <h2>User Authentication</h2>
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'login')">Login</button>
+            <button class="tab" onclick="openTab(event, 'register')">Register</button>
+        </div>
+        
+        <div id="login" class="tab-content active">
+            <div class="login-form">
+                <h3>Login to Your Account</h3>
+                <div>
+                    <label for="login-username">Username or Email:</label>
+                    <input type="text" id="login-username" placeholder="Enter username or email">
+                </div>
+                <div>
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" placeholder="Enter password">
+                </div>
+                <button onclick="login()">Login</button>
+                <div id="login-status" class="status"></div>
+            </div>
+        </div>
+        
+        <div id="register" class="tab-content">
+            <div class="login-form">
+                <h3>Create a New Account</h3>
+                <div>
+                    <label for="reg-username">Username:</label>
+                    <input type="text" id="reg-username" placeholder="Choose a username">
+                </div>
+                <div>
+                    <label for="reg-email">Email:</label>
+                    <input type="email" id="reg-email" placeholder="Enter your email">
+                </div>
+                <div>
+                    <label for="reg-password">Password:</label>
+                    <input type="password" id="reg-password" placeholder="Create a password">
+                </div>
+                <button onclick="register()">Register</button>
+                <div id="register-status" class="status"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Code Translation</h2>
+        <div class="row">
+            <div class="col">
+                <label for="source-language">Source Language:</label>
+                <select id="source-language">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="php">PHP</option>
+                    <option value="swift">Swift</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="rust">Rust</option>
+                </select>
+                <label for="source-code">Source Code:</label>
+                <textarea id="source-code" placeholder="Enter your code here...">def factorial(n):
+    if n == 0 or n == 1:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+# Calculate factorial of 5
+result = factorial(5)
+print(f"Factorial of 5 is {result}")</textarea>
+            </div>
+            <div class="col">
+                <label for="target-language">Target Language:</label>
+                <select id="target-language">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="php">PHP</option>
+                    <option value="swift">Swift</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="rust">Rust</option>
+                </select>
+                <label for="translated-code">Translated Code:</label>
+                <textarea id="translated-code" placeholder="Translated code will appear here..." readonly></textarea>
+            </div>
+        </div>
+        <button onclick="translateCode()">Translate Code</button>
+        <div id="translation-status" class="status"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Vulnerability Scanner</h2>
+        <div class="row">
+            <div class="col">
+                <label for="scan-language">Code Language:</label>
+                <select id="scan-language">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="php">PHP</option>
+                    <option value="swift">Swift</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="rust">Rust</option>
+                </select>
+                <label for="scan-code">Code to Scan:</label>
+                <textarea id="scan-code" placeholder="Enter code to scan for vulnerabilities...">import os
+
+def process_user_input(user_input):
+    # This has a command injection vulnerability
+    os.system("echo " + user_input)
+    
+    # This has a code injection vulnerability
+    result = eval(user_input)
+    
+    return result</textarea>
+            </div>
+            <div class="col">
+                <label for="scan-depth">Scan Depth:</label>
+                <select id="scan-depth">
+                    <option value="quick">Quick Scan</option>
+                    <option value="full">Full Scan (Premium)</option>
+                </select>
+                <button onclick="scanCode()" style="margin-top: 30px;">Scan for Vulnerabilities</button>
+                <div id="scan-status" class="status"></div>
+            </div>
+        </div>
+        <div id="vulnerability-results" class="vulnerability-results">
+            <h3>Scan Results</h3>
+            <p>Run a scan to see results...</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Astutely Chatbot</h2>
+        <div class="row">
+            <div class="col">
+                <div id="chat-container" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background-color: #f9f9f9;">
+                    <div id="chat-messages">
+                        <div class="message bot">
+                            <strong>Astutely:</strong> Hi there! I'm Astutely, your AI coding assistant. How can I help you today?
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input type="text" id="chat-input" placeholder="Ask me about code or request a translation..." style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="col-auto">
+                        <button onclick="sendMessage()" id="send-button">Send</button>
+                    </div>
+                </div>
+                <div id="chat-status" class="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>User Profile</h2>
+        <div id="user-profile">
+            <p>Please log in to view your profile information.</p>
+        </div>
+        <button onclick="getTranslationHistory()" id="history-button" disabled>View Translation History</button>
+        <div id="translation-history"></div>
+        
+        <!-- Add Upgrade button -->
+        <button onclick="showPricingModal()" class="upgrade-button" id="upgrade-button" style="display: none; background-color: #6772E5; margin-top: 15px;">Upgrade Your Plan</button>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div id="pricing-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 900px; border-radius: 8px;">
+            <span class="close" onclick="closePricingModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2>Choose Your Plan</h2>
+            <div class="pricing-container" style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 20px;">
+                <!-- Free Plan -->
+                <div class="pricing-card" style="flex: 1; min-width: 250px; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3>Free</h3>
+                    <div class="price" style="font-size: 24px; font-weight: bold; margin: 15px 0;">$0<span style="font-size: 16px; font-weight: normal;">/month</span></div>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li style="padding: 5px 0;">✓ 50 translations per month</li>
+                        <li style="padding: 5px 0;">✓ Quick vulnerability scans</li>
+                        <li style="padding: 5px 0;">✓ 30-day history retention</li>
+                        <li style="padding: 5px 0;">✓ Community support</li>
+                    </ul>
+                    <button onclick="selectPlan('free')" style="width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">Current Plan</button>
+                </div>
+                
+                <!-- Pro Plan -->
+                <div class="pricing-card" style="flex: 1; min-width: 250px; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid #6772E5;">
+                    <h3>Professional</h3>
+                    <div class="price" style="font-size: 24px; font-weight: bold; margin: 15px 0;">$9.99<span style="font-size: 16px; font-weight: normal;">/month</span></div>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li style="padding: 5px 0;">✓ 500 translations per month</li>
+                        <li style="padding: 5px 0;">✓ Full vulnerability scans</li>
+                        <li style="padding: 5px 0;">✓ 90-day history retention</li>
+                        <li style="padding: 5px 0;">✓ Email support</li>
+                    </ul>
+                    <button onclick="selectPlan('professional')" style="width: 100%; padding: 10px; background-color: #6772E5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">Upgrade to Pro</button>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="pricing-card" style="flex: 1; min-width: 250px; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3>Enterprise</h3>
+                    <div class="price" style="font-size: 24px; font-weight: bold; margin: 15px 0;">$29.99<span style="font-size: 16px; font-weight: normal;">/month</span></div>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li style="padding: 5px 0;">✓ 5000 translations per month</li>
+                        <li style="padding: 5px 0;">✓ Full vulnerability scans</li>
+                        <li style="padding: 5px 0;">✓ 365-day history retention</li>
+                        <li style="padding: 5px 0;">✓ Priority support</li>
+                    </ul>
+                    <button onclick="selectPlan('enterprise')" style="width: 100%; padding: 10px; background-color: #6772E5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">Upgrade to Enterprise</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get API base URL from config
+        const API_BASE_URL = window.APP_CONFIG.API_BASE_URL;
+        
+        // Global variables
+        let apiKey = null;
+        let authToken = null;
+        let userId = null;
+        let username = null;
+        
+        // Tab functionality
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        // User authentication
+        async function login() {
+            const usernameOrEmail = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const statusElement = document.getElementById('login-status');
+            
+            // Track login attempt
+            trackConversion('login_started', 'Account', 'User initiated login');
+            
+            if (!usernameOrEmail || !password) {
+                statusElement.className = 'status error';
+                statusElement.textContent = 'Please enter both username/email and password';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username_or_email: usernameOrEmail,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    apiKey = data.api_key;
+                    authToken = data.token;
+                    userId = data.user_id;
+                    username = data.username;
+                    
+                    statusElement.className = 'status success';
+                    statusElement.textContent = `Welcome back, ${data.username}!`;
+                    
+                    // Track successful login
+                    trackConversion('login_completed', 'Account', 'User logged in successfully');
+                    
+                    // Update UI for logged-in state
+                    updateUserProfile();
+                    document.getElementById('history-button').disabled = false;
+                } else {
+                    statusElement.className = 'status error';
+                    statusElement.textContent = data.message || 'Login failed';
+                }
+            } catch (error) {
+                statusElement.className = 'status error';
+                statusElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function register() {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const statusElement = document.getElementById('register-status');
+            
+            // Track registration attempt
+            trackConversion('registration_started', 'Account', 'User initiated registration');
+            
+            if (!username || !email || !password) {
+                statusElement.className = 'status error';
+                statusElement.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusElement.className = 'status success';
+                    statusElement.textContent = 'Registration successful! Please log in.';
+                    
+                    // Track successful registration
+                    trackConversion('registration_completed', 'Account', 'User registered successfully');
+                    
+                    // Clear form fields
+                    document.getElementById('reg-username').value = '';
+                    document.getElementById('reg-email').value = '';
+                    document.getElementById('reg-password').value = '';
+                    
+                    // Switch to login tab
+                    document.querySelector('.tab[onclick*="login"]').click();
+                } else {
+                    statusElement.className = 'status error';
+                    statusElement.textContent = data.message || 'Registration failed';
+                }
+            } catch (error) {
+                statusElement.className = 'status error';
+                statusElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Code translation
+        async function translateCode() {
+            if (!apiKey) {
+                document.getElementById('translation-status').className = 'status error';
+                document.getElementById('translation-status').textContent = 'Please log in to use the translation service';
+                return;
+            }
+            
+            // Track translation attempt
+            trackConversion('translation_started', 'Translation', 'User initiated translation');
+            
+            const sourceCode = document.getElementById('source-code').value;
+            const sourceLanguage = document.getElementById('source-language').value;
+            const targetLanguage = document.getElementById('target-language').value;
+            const statusElement = document.getElementById('translation-status');
+            
+            if (!sourceCode) {
+                statusElement.className = 'status error';
+                statusElement.textContent = 'Please enter source code';
+                return;
+            }
+            
+            statusElement.className = 'status info';
+            statusElement.textContent = 'Translating...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({
+                        source_code: sourceCode,
+                        source_language: sourceLanguage,
+                        target_language: targetLanguage
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('translated-code').value = data.translated_code;
+                    statusElement.className = 'status success';
+                    statusElement.textContent = `Translation successful! ${data.translations_remaining} translations remaining.`;
+                    
+                    // Track successful translation
+                    trackConversion('translation_completed', 'Translation', 
+                        `${sourceLanguage} to ${targetLanguage} (${sourceCode.length} chars)`);
+                } else {
+                    statusElement.className = 'status error';
+                    statusElement.textContent = data.error || 'Translation failed';
+                }
+            } catch (error) {
+                statusElement.className = 'status error';
+                statusElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Vulnerability scanning
+        async function scanCode() {
+            if (!apiKey) {
+                document.getElementById('scan-status').className = 'status error';
+                document.getElementById('scan-status').textContent = 'Please log in to use the vulnerability scanner';
+                return;
+            }
+            
+            const code = document.getElementById('scan-code').value;
+            const language = document.getElementById('scan-language').value;
+            const scanDepth = document.getElementById('scan-depth').value;
+            const statusElement = document.getElementById('scan-status');
+            const resultsElement = document.getElementById('vulnerability-results');
+            
+            if (!code) {
+                statusElement.className = 'status error';
+                statusElement.textContent = 'Please enter code to scan';
+                return;
+            }
+            
+            statusElement.className = 'status info';
+            statusElement.textContent = 'Scanning...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/vulnerabilities/scan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language,
+                        scan_depth: scanDepth
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusElement.className = 'status success';
+                    statusElement.textContent = `Scan completed. Found ${data.vulnerabilities_found} potential issues.`;
+                    
+                    // Display results
+                    let resultsHtml = '<h3>Scan Results</h3>';
+                    
+                    if (data.scan_type === 'quick') {
+                        resultsHtml += '<p><strong>Quick Scan Results:</strong></p>';
+                        
+                        if (data.results.length === 0) {
+                            resultsHtml += '<p>No vulnerabilities detected in quick scan.</p>';
+                        } else {
+                            resultsHtml += '<ul>';
+                            data.results.forEach(vuln => {
+                                resultsHtml += `<li><strong>Line ${vuln.line}:</strong> ${vuln.type} - <code>${vuln.code}</code></li>`;
+                            });
+                            resultsHtml += '</ul>';
+                        }
+                    } else {
+                        // Full scan results
+                        resultsHtml += '<p><strong>Quick Scan Results:</strong></p>';
+                        
+                        if (data.results.quick_scan_results.length === 0) {
+                            resultsHtml += '<p>No vulnerabilities detected in quick scan.</p>';
+                        } else {
+                            resultsHtml += '<ul>';
+                            data.results.quick_scan_results.forEach(vuln => {
+                                resultsHtml += `<li><strong>Line ${vuln.line}:</strong> ${vuln.type} - <code>${vuln.code}</code></li>`;
+                            });
+                            resultsHtml += '</ul>';
+                        }
+                        
+                        resultsHtml += '<p><strong>AI Analysis:</strong></p>';
+                        resultsHtml += `<pre>${data.results.ai_analysis}</pre>`;
+                    }
+                    
+                    resultsElement.innerHTML = resultsHtml;
+                } else {
+                    statusElement.className = 'status error';
+                    statusElement.textContent = data.message || 'Scan failed';
+                }
+            } catch (error) {
+                statusElement.className = 'status error';
+                statusElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // User profile
+        function updateUserProfile() {
+            if (!username) return;
+            
+            const profileElement = document.getElementById('user-profile');
+            profileElement.innerHTML = `
+                <h3>Welcome, ${username}!</h3>
+                <p><strong>User ID:</strong> ${userId}</p>
+                <p><strong>API Key:</strong> ${apiKey}</p>
+            `;
+            
+            // Show upgrade button when logged in
+            document.getElementById('upgrade-button').style.display = 'block';
+        }
+        
+        // Astutely Chatbot Integration
+        let conversationId = null;
+        
+        // Add event listener for Enter key in chat input
+        document.getElementById('chat-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        async function sendMessage() {
+            if (!apiKey) {
+                document.getElementById('chat-status').className = 'status error';
+                document.getElementById('chat-status').textContent = 'Please log in to use Astutely';
+                return;
+            }
+            
+            const messageInput = document.getElementById('chat-input');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessageToChat('user', message);
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Disable send button
+            document.getElementById('send-button').disabled = true;
+            document.getElementById('chat-status').className = 'status info';
+            document.getElementById('chat-status').textContent = 'Astutely is thinking...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/astutely/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_id: conversationId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Add bot response to chat
+                    addMessageToChat('bot', data.response);
+                    
+                    // Store conversation ID for continuing the conversation
+                    conversationId = data.conversation_id;
+                    
+                    document.getElementById('chat-status').className = '';
+                    document.getElementById('chat-status').textContent = '';
+                } else {
+                    document.getElementById('chat-status').className = 'status error';
+                    document.getElementById('chat-status').textContent = data.error || 'Error communicating with Astutely';
+                }
+            } catch (error) {
+                document.getElementById('chat-status').className = 'status error';
+                document.getElementById('chat-status').textContent = `Error: ${error.message}`;
+            }
+            
+            // Re-enable send button
+            document.getElementById('send-button').disabled = false;
+        }
+        
+        function addMessageToChat(sender, message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            // Style messages differently based on sender
+            if (sender === 'user') {
+                messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
+                messageDiv.style.textAlign = 'right';
+                messageDiv.style.marginLeft = '20%';
+                messageDiv.style.backgroundColor = '#e6f7ff';
+                messageDiv.style.padding = '8px';
+                messageDiv.style.borderRadius = '8px';
+                messageDiv.style.marginBottom = '10px';
+            } else {
+                messageDiv.innerHTML = `<strong>Astutely:</strong> ${message}`;
+                messageDiv.style.marginRight = '20%';
+                messageDiv.style.backgroundColor = '#f0f0f0';
+                messageDiv.style.padding = '8px';
+                messageDiv.style.borderRadius = '8px';
+                messageDiv.style.marginBottom = '10px';
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom of chat
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Translation history
+        async function getTranslationHistory() {
+            if (!authToken) {
+                document.getElementById('translation-history').innerHTML = '<p class="error">Please log in to view your translation history</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/translations/history`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                const historyElement = document.getElementById('translation-history');
+                
+                if (data.success && data.translations && Array.isArray(data.translations)) {
+                    if (data.translations.length === 0) {
+                        historyElement.innerHTML = '<p>No translation history found.</p>';
+                    } else {
+                        let historyHtml = '<h3>Translation History</h3><ul>';
+                        
+                        data.translations.forEach(item => {
+                            historyHtml += `
+                                <li>
+                                    <strong>${item.source_language} → ${item.target_language}</strong>
+                                    <br>
+                                    <small>${new Date(item.timestamp).toLocaleString()}</small>
+                                </li>
+                            `;
+                        });
+                        
+                        historyHtml += '</ul>';
+                        historyElement.innerHTML = historyHtml;
+                    }
+                } else {
+                    historyElement.innerHTML = `<p class="error">${data.message || 'No translation history available'}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('translation-history').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+        // Pricing and subscription functions
+        function showPricingModal() {
+            document.getElementById('pricing-modal').style.display = 'block';
+        }
+        
+        function closePricingModal() {
+            document.getElementById('pricing-modal').style.display = 'none';
+        }
+        
+        function selectPlan(planId) {
+            if (planId === 'free') {
+                alert('You are already on the Free plan.');
+                closePricingModal();
+                return;
+            }
+            
+            // Track plan selection
+            trackConversion('plan_selected', 'Subscription', `Selected plan: ${planId}`);
+            
+            if (!authToken) {
+                alert('Please log in to upgrade your plan.');
+                closePricingModal();
+                return;
+            }
+            
+            // Create checkout session
+            fetch(`${API_BASE_URL}/api/billing/checkout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ plan_id: planId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.checkout_url) {
+                    // Track checkout initiation
+                    trackConversion('checkout_started', 'Subscription', `Checkout for plan: ${planId}`);
+                    
+                    // Redirect to Stripe Checkout
+                    window.location.href = data.checkout_url;
+                } else {
+                    alert(data.message || 'Error creating checkout session');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            });
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('pricing-modal');
+            if (event.target === modal) {
+                closePricingModal();
+            }
+        };
+    </script>
+</body>
+</html>
