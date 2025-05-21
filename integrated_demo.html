@@ -6,19 +6,27 @@
     <title>AI Code Translator - Integrated Demo</title>
     
     <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEASUREMENT_ID"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4HCLYK6TND"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-MEASUREMENT_ID');
-        
-        // Track conversions
+        gtag('config', 'G-4HCLYK6TND');
+    </script>
+    
+    <!-- Placeholder for analytics tracking (can be safely used without Google Analytics) -->
+    <script>
+        // Define empty tracking function that won't cause errors when called
         function trackConversion(action, category, label) {
+            console.log('Analytics tracking (disabled):', action, category, label);
+            // When you enable Google Analytics, replace this function with the commented version below
+            /*
             gtag('event', action, {
                 'event_category': category,
                 'event_label': label
             });
+            */
         }
     </script>
     <style>
