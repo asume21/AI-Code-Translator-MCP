@@ -217,6 +217,7 @@ def languages():
     })
 
 @app.route('/translate', methods=['POST'])
+@app.route('/api/translate', methods=['POST'])
 @require_api_key
 def translate_endpoint():
     data = request.json
@@ -250,6 +251,7 @@ def translate_endpoint():
     })
 
 @app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 @require_api_key
 def chat_endpoint():
     data = request.json
